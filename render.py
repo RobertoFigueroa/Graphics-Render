@@ -1,5 +1,7 @@
 from data_types_module import dword, word, char
 from utils import color
+from obj import Obj
+
 
 BLACK = color(0, 0, 0)
 WHITE = color(255, 255, 255)
@@ -176,6 +178,63 @@ class Render(object):
 
 		
 
+	def glLine_coord(self, x0, y0, x1, y1): # Window coordinates
+
+		dx = abs(x1 - x0)
+		dy = abs(y1 - y0)
+
+		steep = dy > dx
+
+		if steep:
+			x0, y0 = y0, x0
+			x1, y1 = y1, x1
+
+		if x0 > x1:
+			x0, x1 = x1, x0
+			y0, y1 = y1, y0
+
+		dx = abs(x1 - x0)
+		dy = abs(y1 - y0)
+
+		offset = 0
+		limit = 0.5
+		
+		try:
+			m = dy/dx
+		except ZeroDivisionError:
+			pass
+		else:
+			y = y0
+
+			for x in range(x0, x1 + 1):
+				if steep:
+					self.glVertex_coord(y, x)
+				else:
+					self.glVertex_coord(x, y)
+
+				offset += m
+				if offset >= limit:
+					y += 1 if y0 < y1 else -1
+					limit += 1
+
+	def loadModel(self, filename, translate, scale):
+		model = Obj(filename)
+
+		for face in model.faces:
+
+			vertCount = len(face)
+
+			for vert in range(vertCount):
+				
+				v0 = model.vertices[ face[vert][0] - 1 ]
+				v1 = model.vertices[ face[(vert + 1) % vertCount][0] - 1]
+
+				x0 = round(v0[0] * scale[0]  + translate[0])
+				y0 = round(v0[1] * scale[1]  + translate[1])
+				x1 = round(v1[0] * scale[0]  + translate[0])
+				y1 = round(v1[1] * scale[1]  + translate[1])
+
+				self.glLine_coord(x0, y0, x1, y1)
 
 
 
