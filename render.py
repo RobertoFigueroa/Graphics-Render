@@ -236,5 +236,39 @@ class Render(object):
 
 				self.glLine_coord(x0, y0, x1, y1)
 
+	def drawPolygons(self, points):
+		
+		vertices = len(points)
+
+		for v in range(vertices):
+			
+			x0 = points[v][0]
+			y0 = points[v][1]
+
+			x1 = points[(v +1)% vertices][0]
+			y1 = points[(v +1) % vertices][1]
+
+			self.glLine_coord(x0,y0,x1,y1)
+			
+
+	#Reference: https://handwiki.org/wiki/Even%E2%80%93odd_rule
+	def is_point_in_path(self, x, y, poly):
+		num = len(poly)
+		i = 0
+		j = num - 1
+		c = False
+		for i in range(num):
+			if ((poly[i][1] > y) != (poly[j][1] > y)) and \
+					(x < poly[i][0] + (poly[j][0] - poly[i][0]) * (y - poly[i][1]) /
+									(poly[j][1] - poly[i][1])):
+				c = not c
+			j = i
+		return c
 
 
+	def fillPoly(self, poly, color):
+		for x in range(self.width):
+			for y in range(self.height):
+				if self.is_point_in_path(x,y,poly):
+					self.framebuffer[y][x] = color
+		
